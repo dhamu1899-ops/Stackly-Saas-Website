@@ -431,3 +431,39 @@ if (document.body.classList.contains('dashboard-page')) {
     }, true);
   });
 })();
+
+
+
+// =========================================================
+// Remaining QA accessibility/sticky helper fixes
+// =========================================================
+(function(){
+  const header = document.querySelector('.header');
+  const setHeader = () => {
+    if(header) header.classList.toggle('scrolled', window.scrollY > 10);
+  };
+  setHeader();
+  window.addEventListener('scroll', setHeader, {passive:true});
+
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  if(hamburger && navLinks){
+    hamburger.setAttribute('aria-expanded', String(navLinks.classList.contains('open')));
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && navLinks.classList.contains('open')){
+        navLinks.classList.remove('open');
+        document.body.classList.remove('mobile-menu-open');
+        hamburger.setAttribute('aria-expanded','false');
+        const icon = hamburger.querySelector('i');
+        if(icon) icon.className = 'fa-solid fa-bars';
+        hamburger.focus();
+      }
+    });
+  }
+
+  document.querySelectorAll('a[target="_blank"]').forEach(link=>{
+    if(!link.getAttribute('rel')){
+      link.setAttribute('rel','noopener noreferrer');
+    }
+  });
+})();
