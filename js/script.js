@@ -109,7 +109,7 @@ if(document.body.classList.contains('dashboard-page')){
 
 // ===== Stackly launch + logo-only premium loader =====
 (function(){
-  const LOGO_PATH = 'assets/logo/stackly-logo.webp';
+  const LOGO_PATH = 'assets/logo/stackly-logo.svg';
 
   const loader = document.createElement('div');
   loader.className = 'stackly-loader hide';
@@ -466,4 +466,120 @@ if (document.body.classList.contains('dashboard-page')) {
       link.setAttribute('rel','noopener noreferrer');
     }
   });
+})();
+
+
+
+// FINAL REAL FIX - hamburger opens and closes menu
+(function(){
+  function getMenu(){return document.querySelector('.nav-links');}
+  function closeMenu(){
+    const m=getMenu();
+    if(m)m.classList.remove('stackly-menu-open');
+    document.body.classList.remove('stackly-menu-active');
+    document.querySelectorAll('.stackly-mobile-toggle').forEach(b=>{b.classList.remove('is-open');b.setAttribute('aria-expanded','false');});
+  }
+  function bind(){
+    document.querySelectorAll('.stackly-mobile-toggle').forEach(btn=>{
+      if(btn.dataset.stacklyFixed==='true')return;
+      btn.dataset.stacklyFixed='true';
+      btn.addEventListener('click',function(e){
+        e.preventDefault();e.stopPropagation();
+        const m=getMenu(); if(!m)return;
+        const opened=m.classList.contains('stackly-menu-open');
+        closeMenu();
+        if(!opened){m.classList.add('stackly-menu-open');document.body.classList.add('stackly-menu-active');btn.classList.add('is-open');btn.setAttribute('aria-expanded','true');}
+      });
+    });
+    const m=getMenu();
+    if(m)m.querySelectorAll('a').forEach(a=>{if(!a.dataset.closeBound){a.dataset.closeBound='true';a.addEventListener('click',closeMenu);}});
+  }
+  bind();document.addEventListener('DOMContentLoaded',bind);
+  document.addEventListener('click',e=>{if(!e.target.closest('.stackly-mobile-toggle,.nav-links'))closeMenu();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+})();
+
+// =========================================================
+// STACKLY FINAL REQUEST FIX - reliable mobile full-page menu
+// =========================================================
+(function(){
+  const menu = document.querySelector('.nav-links');
+  const btn = document.querySelector('.hamburger');
+  if(!menu || !btn) return;
+
+  if(!menu.querySelector('.mobile-menu-actions')){
+    const actions = document.createElement('div');
+    actions.className = 'mobile-menu-actions';
+    actions.innerHTML = '<a class="btn btn-light" href="login.html">Login</a><a class="btn btn-primary" href="signup.html">Get Started</a>';
+    menu.appendChild(actions);
+  }
+
+  function setOpen(open){
+    menu.classList.toggle('open', open);
+    menu.classList.toggle('stackly-menu-open', open);
+    document.body.classList.toggle('mobile-menu-open', open);
+    document.body.classList.toggle('stackly-menu-active', open);
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+    const icon = btn.querySelector('i');
+    if(icon) icon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  }
+
+  btn.addEventListener('click', function(e){
+    if(!window.matchMedia('(max-width: 991px)').matches) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    setOpen(!(menu.classList.contains('open') || menu.classList.contains('stackly-menu-open')));
+  }, true);
+
+  menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') setOpen(false); });
+  window.addEventListener('resize', () => { if(window.matchMedia('(min-width: 992px)').matches) setOpen(false); });
+})();
+
+// =========================================================
+// FINAL DASHBOARD MOBILE FIX: logo left, hamburger right, logout in sidebar
+// =========================================================
+(function(){
+  if(!document.body.classList.contains('dashboard-page')) return;
+
+  const sidebar = document.querySelector('.dash-sidebar');
+  const toggle = document.querySelector('.dash-toggle');
+  const topLogout = document.querySelector('.dash-top-actions .logout-btn');
+  if(!sidebar || !toggle) return;
+
+  if(!sidebar.querySelector('.dash-mobile-logout')){
+    const logout = document.createElement('button');
+    logout.type = 'button';
+    logout.className = 'dash-mobile-logout';
+    logout.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Logout';
+    logout.addEventListener('click', function(){ window.location.href = 'index.html'; });
+    const menu = sidebar.querySelector('.dash-menu');
+    if(menu){ menu.appendChild(logout); }
+    else{ sidebar.appendChild(logout); }
+  }
+
+  function setSidebar(open){
+    document.body.classList.toggle('sidebar-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close dashboard menu' : 'Open dashboard menu');
+    const icon = toggle.querySelector('i');
+    if(icon) icon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  }
+
+  toggle.addEventListener('click', function(e){
+    if(!window.matchMedia('(max-width: 991px)').matches) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    setSidebar(!document.body.classList.contains('sidebar-open'));
+  }, true);
+
+  document.querySelectorAll('.dash-menu a[data-panel]').forEach(link => {
+    link.addEventListener('click', function(){
+      if(window.matchMedia('(max-width: 991px)').matches) setSidebar(false);
+    });
+  });
+
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') setSidebar(false); });
+  window.addEventListener('resize', function(){ if(window.matchMedia('(min-width: 992px)').matches) setSidebar(false); });
 })();

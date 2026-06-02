@@ -5,20 +5,20 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Admin Dashboard | Stackly SaaS</title>
-<link href="assets/logo/stackly-logo.webp" rel="icon"/>
+<link href="assets/logo/stackly-logo.svg" rel="icon"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <link href="css/style.css" rel="stylesheet"/>
-<meta content="Stackly admin dashboard for users, CRM, billing, support, analytics and security management." name="description"/><meta content="Stackly SaaS, CRM software, billing insights, startup dashboard, SaaS analytics, support desk, automation platform, Salem SaaS" name="keywords"/><meta content="Stackly SaaS" name="author"/><meta content="Admin Dashboard | Stackly SaaS" property="og:title"/><meta content="Stackly admin dashboard for users, CRM, billing, support, analytics and security management." property="og:description"/><meta content="website" property="og:type"/><meta content="assets/logo/stackly-logo.webp" property="og:image"/><meta content="#1769ff" name="theme-color"/></head>
+<meta content="Stackly admin dashboard for users, CRM, billing, support, analytics and security management." name="description"/><meta content="Stackly SaaS, CRM software, billing insights, startup dashboard, SaaS analytics, support desk, automation platform, Salem SaaS" name="keywords"/><meta content="Stackly SaaS" name="author"/><meta content="Admin Dashboard | Stackly SaaS" property="og:title"/><meta content="Stackly admin dashboard for users, CRM, billing, support, analytics and security management." property="og:description"/><meta content="website" property="og:type"/><meta content="assets/logo/stackly-logo.svg" property="og:image"/><meta content="#1769ff" name="theme-color"/><link href="assets/css/qa-fixes.css" rel="stylesheet"/>
+</head>
 <body class="dashboard-page admin-dashboard">
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <aside class="dash-sidebar" id="dashboard-sidebar">
 <a class="dash-logo" href="index.html">
-<img alt="Stackly SaaS logo" decoding="async" src="assets/logo/stackly-logo.webp"/>
-<span>Stackly</span>
-</a>
+<img alt="Stackly SaaS logo" decoding="async" src="assets/logo/stackly-logo.svg"/>
+<span class="logo-text">STACKLY</span></a>
 <div class="dash-user">
 <small>Admin Panel</small>
 <strong id="dashName">Dhamu</strong>
@@ -34,8 +34,8 @@
 <a data-panel="settings"><i class="fa-solid fa-shield-halved"></i> Settings</a>
 </nav>
 </aside>
-<main id="main-content" class="dash-main">
-<header class="dash-top dash-top-premium">
+<main class="dash-main" id="main-content">
+<header class="dash-top dash-top-premium"><a aria-label="Stackly home" class="dash-mobile-brand" href="index.html"><img alt="Stackly logo" src="assets/logo/stackly-logo.svg"/><span>STACKLY</span></a>
 <div class="dash-title-wrap">
 <button aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Open dashboard menu" class="dash-toggle" type="button"><i class="fa-solid fa-bars"></i></button>
 <div>
@@ -102,5 +102,7 @@
 </section>
 </main>
 <script src="js/script.js"></script>
+<script src="assets/js/qa-fixes.js"></script>
+
 </body>
 </html>
