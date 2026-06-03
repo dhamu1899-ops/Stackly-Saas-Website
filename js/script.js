@@ -583,3 +583,260 @@ if (document.body.classList.contains('dashboard-page')) {
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape') setSidebar(false); });
   window.addEventListener('resize', function(){ if(window.matchMedia('(min-width: 992px)').matches) setSidebar(false); });
 })();
+
+
+// =========================================================
+// QA BUG CLEARANCE PATCH v2
+// =========================================================
+(function(){
+  const nav = document.querySelector('.nav-links');
+  const btn = document.querySelector('.hamburger');
+  const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    const href = (link.getAttribute('href') || '').split('#')[0].toLowerCase();
+    const isActive = href === current || (current === '' && href === 'index.html');
+    link.classList.toggle('active', isActive);
+    if(isActive) link.setAttribute('aria-current','page');
+  });
+
+  if(nav && btn){
+    function setMenu(open){
+      nav.classList.toggle('open', open);
+      nav.classList.toggle('stackly-menu-open', open);
+      document.body.classList.toggle('mobile-menu-open', open);
+      document.body.classList.toggle('stackly-menu-active', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      const icon = btn.querySelector('i');
+      if(icon) icon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+    }
+    btn.addEventListener('click', function(e){
+      if(!window.matchMedia('(max-width: 1100px)').matches) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setMenu(!nav.classList.contains('open'));
+    });
+    nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('click', e => {
+      if(window.matchMedia('(max-width: 1100px)').matches && !e.target.closest('.nav,.nav-links')) setMenu(false);
+    });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') setMenu(false); });
+    window.addEventListener('resize', () => { if(window.matchMedia('(min-width: 1101px)').matches) setMenu(false); });
+  }
+
+  document.querySelectorAll('a[href^="http"]').forEach(a => {
+    const sameHost = a.hostname && a.hostname === location.hostname;
+    if(!sameHost){
+      a.setAttribute('target','_blank');
+      const rel = new Set((a.getAttribute('rel') || '').split(/\s+/).filter(Boolean));
+      rel.add('noopener'); rel.add('noreferrer');
+      a.setAttribute('rel', Array.from(rel).join(' '));
+    }
+  });
+})();
+
+(function(){
+  const form = document.getElementById('stacklyContactForm');
+  if(!form) return;
+
+  const messages = {
+    name: 'Enter a valid name using letters, spaces, apostrophes or hyphens only.',
+    email: 'Enter a valid email address, for example name@example.com.',
+    phone: 'Enter a valid phone number with 7 to 20 digits/symbols.',
+    company: 'Enter your company or team name.',
+    requirement: 'Select a requirement.',
+    message: 'Enter at least 10 characters about your requirement.'
+  };
+
+  function fieldName(field){
+    return field.getAttribute('name') || field.getAttribute('aria-label') || 'field';
+  }
+
+  function clearError(field){
+    field.classList.remove('is-invalid');
+    field.removeAttribute('aria-invalid');
+    const next = field.nextElementSibling;
+    if(next && next.classList.contains('field-error')) next.remove();
+  }
+
+  function showError(field, text){
+    clearError(field);
+    field.classList.add('is-invalid');
+    field.setAttribute('aria-invalid','true');
+    const err = document.createElement('span');
+    err.className = 'field-error';
+    err.textContent = text;
+    field.insertAdjacentElement('afterend', err);
+  }
+
+  function validate(){
+    let valid = true;
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+      clearError(field);
+      const name = fieldName(field);
+      if(!field.checkValidity()){
+        showError(field, messages[name] || 'Please complete this field correctly.');
+        valid = false;
+      }
+    });
+    return valid;
+  }
+
+  form.querySelectorAll('input, select, textarea').forEach(field => {
+    field.addEventListener('input', () => { if(field.classList.contains('is-invalid')) validate(); });
+    field.addEventListener('blur', () => { if(field.value.trim() !== '') validate(); });
+  });
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const status = form.querySelector('.form-status');
+    if(status){ status.className = 'form-status'; status.textContent = ''; }
+
+    if(!validate()){
+      if(status){
+        status.classList.add('error');
+        status.textContent = 'Please fix the highlighted fields before submitting.';
+      }
+      const firstInvalid = form.querySelector('.is-invalid');
+      if(firstInvalid) firstInvalid.focus();
+      return false;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const label = submitBtn ? submitBtn.querySelector('.btn-label') : null;
+    if(submitBtn){
+      submitBtn.disabled = true;
+      submitBtn.classList.add('is-loading','is-processing');
+      if(label) label.textContent = 'Submitting';
+    }
+
+    window.setTimeout(() => {
+      if(status){
+        status.classList.add('success');
+        status.textContent = 'Thank you! Your enquiry has been submitted successfully.';
+      }
+      form.reset();
+      if(submitBtn){
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('is-loading','is-processing');
+        if(label) label.textContent = 'Submit Enquiry';
+      }
+    }, 500);
+
+    return false;
+  }, true);
+})();
+
+
+// =========================================================
+// FINAL HEADER/MENU CLEANUP: remove duplicate mobile auth,
+// add menu brand, keep hamburger/full-page menu reliable.
+// =========================================================
+(function(){
+  const nav = document.querySelector('.nav-links');
+  const btn = document.querySelector('.hamburger');
+  if(!nav) return;
+
+  nav.querySelectorAll('.mobile-menu-actions').forEach(el => el.remove());
+
+  if(!nav.querySelector('.mobile-menu-brand')){
+    const headerLogo = document.querySelector('.logo img');
+    const brand = document.createElement('div');
+    brand.className = 'mobile-menu-brand';
+    brand.setAttribute('aria-hidden','true');
+    brand.innerHTML =
+      '<img src="' + (headerLogo ? headerLogo.getAttribute('src') : 'assets/logo/stackly-logo.svg') + '" alt="">' +
+      '<span>STACKLY</span>';
+    nav.insertBefore(brand, nav.firstChild);
+  }
+
+  function setMenu(open){
+    nav.classList.toggle('open', open);
+    nav.classList.toggle('stackly-menu-open', open);
+    document.body.classList.toggle('mobile-menu-open', open);
+    document.body.classList.toggle('stackly-menu-active', open);
+    if(btn){
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      const icon = btn.querySelector('i');
+      if(icon) icon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+    }
+  }
+
+  if(btn && !btn.dataset.finalHeaderPatch){
+    btn.dataset.finalHeaderPatch = 'true';
+    btn.addEventListener('click', function(e){
+      if(!window.matchMedia('(max-width: 991px)').matches) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setMenu(!(nav.classList.contains('open') || nav.classList.contains('stackly-menu-open')));
+    }, true);
+  }
+
+  nav.querySelectorAll('a').forEach(a => {
+    if(!a.dataset.finalClosePatch){
+      a.dataset.finalClosePatch = 'true';
+      a.addEventListener('click', () => setMenu(false));
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if(window.matchMedia('(min-width: 992px)').matches) setMenu(false);
+  });
+})();
+
+
+// =========================================================
+// FINAL USER REQUEST PATCH: remove mobile menu logo/brand,
+// remove duplicate old toggle listeners, full-page white menu.
+// =========================================================
+(function(){
+  function initFinalHeaderMenu(){
+    const nav = document.querySelector('.nav-links');
+    const oldBtn = document.querySelector('.hamburger');
+    if(!nav || !oldBtn || oldBtn.dataset.cleanFinal === 'true') return;
+
+    nav.querySelectorAll('.mobile-menu-brand,.mobile-menu-actions').forEach(el => el.remove());
+
+    const btn = oldBtn.cloneNode(true);
+    btn.dataset.cleanFinal = 'true';
+    btn.setAttribute('aria-controls', nav.id || 'primary-navigation');
+    btn.setAttribute('aria-expanded','false');
+    btn.setAttribute('aria-label','Open navigation menu');
+    oldBtn.parentNode.replaceChild(btn, oldBtn);
+
+    function setOpen(open){
+      nav.querySelectorAll('.mobile-menu-brand,.mobile-menu-actions').forEach(el => el.remove());
+      nav.classList.toggle('open', open);
+      nav.classList.toggle('stackly-menu-open', open);
+      nav.classList.remove('active','show');
+      document.body.classList.toggle('mobile-menu-open', open);
+      document.body.classList.toggle('stackly-menu-active', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      const icon = btn.querySelector('i');
+      if(icon) icon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+    }
+
+    btn.addEventListener('click', function(e){
+      if(!window.matchMedia('(max-width: 991px)').matches) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(!(nav.classList.contains('open') || nav.classList.contains('stackly-menu-open')));
+    });
+
+    nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') setOpen(false); });
+    window.addEventListener('resize', () => { if(window.matchMedia('(min-width: 992px)').matches) setOpen(false); });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initFinalHeaderMenu);
+  }else{
+    initFinalHeaderMenu();
+  }
+  window.addEventListener('load', initFinalHeaderMenu);
+})();
+
